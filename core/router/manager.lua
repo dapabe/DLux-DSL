@@ -49,15 +49,19 @@ local function exclude(t1, t2)
 	return t
 end
 
+---@class TLuxFileRoute
+---@field emit fun(self: self, event: RouteEvent, ...)
+---@field enter fun(self: self, next: TLuxFileRoute, ...)
+---@field push fun(self: self, next: TLuxFileRoute, ...)
 
----@class RouterManager
+---@class RouterManager: TLuxFileRoute
 local Manager = {}
 Manager.__index = Manager
 
 ---@protected
-Manager.__routes = {{}}
+---@type TLuxFileRoute[]
+Manager.__routes = {}
 
----@param event RouteEvent
 function Manager:emit(event, ...)
     local route = self.__routes[#self.__routes]
     if route[event] then route[event](route, ...) end
@@ -69,6 +73,7 @@ function Manager:enter(next, ...)
     self.__routes[#self.__routes] = next
     self:emit("enter", previous, ...)
 end
+
 
 function Manager:push(next, ...)
     local previous = self.__routes[#self.__routes]
@@ -86,6 +91,7 @@ function Manager:pop(...)
     self:emit("resume", previous, ...)
 end
 
+---@param options {include: string[], exclude: string[]}
 function Manager:hook(options)
     options = options or {}
     local callbacks = options.include or loveCallbacks
@@ -100,7 +106,7 @@ function Manager:hook(options)
 end
 
 function Manager.new()
-    return setmetatable({}, Manager)
+    return setmetatable({{}}, Manager)
 end
 
 return Manager

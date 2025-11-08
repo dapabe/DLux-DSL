@@ -1,16 +1,16 @@
 
 ---@class Token
----@field value string
 ---@field type TokenType
+---@field value string
 
 
 
 local Lexer = {}
 
 ---@param code string
----@return table<Token>
+---@return Token[]
 function Lexer.tokenize(code)
-    ---@type table<Token>
+    ---@type Token[]
     local tokens = {}
     local src = code:sub("")
     
