@@ -1,10 +1,4 @@
 
----@alias TokenType 
---- |"NumberLiteral"
---- |"StringLiteral"
-
-
-
 -- _G.Keywords = {
 --     ["local"] = TokenType["Variable"],
 --     ["---"] = TokenType["LuaMatter"],

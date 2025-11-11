@@ -1,13 +1,16 @@
 
----@class TextPrimitive: BoxPrimitive
+---@class TextPrimitive: ViewPrimitive
 ---@field text string
----@field selectedColor table<number, number, number, number>
 local Text = require("tlux.components.primitives.Item.primitive"):extend()
 
-Text.align = "center"
+Text.text = ""
+Text.textAlign = "center"
 Text.textColor = {1, 1, 1, 1}
+Text.selectedColor = {0, 0, 0, 0}
 Text.selectable = true
 Text.fade = true
+
+Text.colorHover = {0,0,0,0}
 
 ---@param self self
 ---@param menu MenuPrimitive
@@ -32,11 +35,10 @@ function Text:new(text, props)
         end
     end
     self.text = text
-    self.selectedColor = {0, 0, 0, 0}
     self.color = self.color
 end
 
-function Text:update(menu, dt)
+function Text:_update(menu, dt)
     if menu:currentItem() == self then
         self.color = self.selectedColor
         if self.fade then self:setColor(menu, dt) end
@@ -45,9 +47,9 @@ function Text:update(menu, dt)
     end
 end
 
-function Text:draw(menu, x, y, w, h)
+function Text:_draw(menu, x, y, w, h)
     if self.text then
-        menu.funcs.drawText(menu, self.text, self.color, x, y, w, h, self.align)
+        menu.funcs.drawText(menu, self.text, self.color, x, y, w, h, self.textAlign)
     end
 end
 

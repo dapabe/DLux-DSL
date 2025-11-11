@@ -1,32 +1,61 @@
 
 ---@class ButtonPrimitive: TextPrimitive
-local Button = require("tlux.components.primitives.Text.primitive"):extend()
+local Button = require("Text.primitive"):extend()
+
+Button.pressed = false
+Button.hovered = false
+
+Button.color = {.5, .5, .8}
+Button.colorHover = {.7, .7, .9}
+
 
 Button.eventFn = function() end
 
-function Button:new(event, props)
-    if event then self.eventFn = event end
+function Button:isHovered()
+    local mx, my = love.mouse.getPosition()
+    return mx > self.x and mx < self.x + self.w and my > self.y and my < self.y + self.h
 end
 
----@param menu MenuPrimitive
----@param key string
----@param state table
-function Button:onEnter(menu, key, state)
-    if menu.funcs.simpleKey(key) == "enter" and state == "pressed" then
-        self:eventFn(menu)
-    end
-end
-
----@param menu MenuPrimitive
+---@param btn 1 | 2
 ---@param x number
 ---@param y number
----@param btn 1 | 2
-function Button:onPress(menu, x, y, btn)
-    if btn == 1 then self:eventFn(menu) end
+function Button:onPress(btn, x, y)
+    if btn == 1 then
+        self.pressed = true
+        self:eventFn()
+     end
 end
 
 function Button:__tostring()
     return "ButtonPrimitive"
 end
+
+---@param callback function
+---@param props ButtonPrimitive
+function Button:new(callback, props)
+    if callback then self.eventFn = callback end
+    for key, value in pairs(props) do
+        if key == "children" then goto continue end
+        self[key] = value
+        ::continue::
+    end
+end
+
+function Button:_update()
+    self.hovered = self:isHovered()
+end
+
+function Button:_draw()
+    local prevColor = self.color
+    if self.hovered then self.color = self.colorHover
+    else self.color = prevColor end
+
+    love.graphics.setColor(self.color)
+    love.graphics.rectangle("fill",
+        self._computed.x, self._computed.y,
+        self._computed.width, self._computed.height
+    )
+end
+
 
 return Button

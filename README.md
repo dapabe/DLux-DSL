@@ -23,8 +23,8 @@ First create this file `routes/root.tlux` and paste this block of code
 ```tlux
 ---
 local name = "Deluxe"
-local count, increment = Iterator.create(0, fn(prev, current) 
-    return prev + 1
+local count, increment = Iterator.create(0, fn(current, prev) 
+    return current + 1
 end)
 
 @OnEnter={fn()
@@ -33,13 +33,13 @@ end}
 
 ---
 <Root>
+    [name]
     <Button
         onClick={fn() increment() end}
     >
-    {count}
+    [count]
     </Button>
 </Root>
-
 ```
 
 ## Scope

@@ -8,5 +8,8 @@
     ],
     "Lua.format.enable": true,
     "Lua.diagnostics.globals": [
+    ],
+    "Lua.diagnostics.disable": [
+        "duplicate-doc-field"
     ]
 }
