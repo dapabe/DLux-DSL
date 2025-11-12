@@ -1,5 +1,6 @@
 
-# TLux(Deluxe) Lang
+# DLux(Deluxe) Lang
+Long term: Design for Lua user experiences
 
 A superset of Lua based on XML-like GUI syntax and FrontMatter declarations specialized for File-Based-Routing.
 
@@ -11,19 +12,19 @@ To use this programming language first you will have create and respect this dir
 rootDir
 ├── routes
 |   ├── dashboard
-|   |   ├── index.tlux
-|   ├── root.tlux
-|   ├── layout.tlux
-|   ├── index.tlux or game.tlux
+|   |   ├── index.dlux
+|   ├── root.dlux
+|   ├── layout.dlux
+|   ├── index.dlux or game.dlux
 ├── conf.lua
 ├── main.lua
 ```
 
-First create this file `routes/root.tlux` and paste this block of code
-```tlux
+First create this file `routes/root.dlux` and paste this block of code
+```dlux
 ---
 local name = "Deluxe"
-local count, increment = Iterator.create(0, fn(current, prev) 
+local count, increment = useState(0, fn(current, prev) 
     return current + 1
 end)
 
@@ -33,11 +34,11 @@ end}
 
 ---
 <Root>
-    [name]
+    <Text>name</Text>
     <Button
         onClick={fn() increment() end}
     >
-    [count]
+    count
     </Button>
 </Root>
 ```
@@ -73,5 +74,5 @@ end}
 
 ## How does this work?
 
-Firstly the compiler transpiles the `.tlux` files into its Lua's counterpart and separates the **LuaMatter** fron the components then the **code generator** injects the element creation on top of the file, just like React does. \
+Firstly the compiler transpiles the `.dlux` files into its Lua's counterpart and separates the **LuaMatter** fron the components then the **code generator** injects the element creation on top of the file, just like React does. \
 Example: `createElement("View", props, children)`
