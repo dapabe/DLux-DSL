@@ -2,9 +2,9 @@
 # DLux(Deluxe) Lang
 Long term: Design for Lua user experiences
 
-A superset of Lua based on XML-like GUI syntax and FrontMatter declarations specialized for File-Based-Routing.
+A superset of Lua based on XML-like component syntax and FrontMatter declarations specialized for File-Based-Routing.
 
-Used on top of the Love2D framework with native component primitives, heavely inspired by the Astro framework and React Native.
+DLux is a meta-framework used on top of the Love2D framework with native component primitives, heavely inspired by the Astro framework and React Native.
 
 To use this programming language first you will have create and respect this directory structure:
 
@@ -19,27 +19,31 @@ rootDir
 ├── conf.lua
 ├── main.lua
 ```
-
+Note: `game.dlux` files **must** the last routing option in a directory, meaning no other dirs should be present at the same level.
 First create this file `routes/root.dlux` and paste this block of code
 ```dlux
----
+###
 local name = "Deluxe"
 local count, increment = useState(0, fn(current, prev) 
     return current + 1
 end)
 
-@OnEnter={fn()
-
-end}
-
----
+@OnEnter={fn() print("Just entered path " .. Route.path) end}
+###
 <Root>
     <Text>name</Text>
+    
     <Button
-        onClick={fn() increment() end}
+        onPress={fn() increment() end}
     >
-    count
+    "Current amount " .. count
     </Button>
+
+    @if count % 2 == 0 then
+        <Text>Secret Message</Text>
+    @else
+        <Text>Nothing to see here
+    @end
 </Root>
 ```
 
