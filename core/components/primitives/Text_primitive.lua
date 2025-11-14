@@ -1,7 +1,7 @@
 
 ---@class TextPrimitive: ViewPrimitive
 ---@field text string
-local Text = require("tlux.components.primitives.Item.primitive"):extend()
+local Text = require("Elemenet_primitive"):extend()
 
 Text.text = ""
 Text.textAlign = "center"

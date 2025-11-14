@@ -1,5 +1,5 @@
 
----@class ElementPrimitive
+---@class DLux.ElementPrimitive
 local Element = {}
 Element.__index = Element
 
@@ -7,7 +7,7 @@ Element.__index = Element
 function Element:new()
 end
 
-function Element:extend()
+function Element:_extend()
     local cls = {}
     for k, v in pairs(self) do
         if k:find("__") == 1 then cls[k] = v end
@@ -18,7 +18,7 @@ function Element:extend()
     return setmetatable(cls, self)
 end
 
-function Element:implement(...)
+function Element:_implement(...)
     for _, cls in pairs({...}) do
         for k, v in pairs(cls) do
             if self[k] == nil then self[k] = v end
@@ -26,7 +26,7 @@ function Element:implement(...)
     end
 end
 
-function Element:isElement(T)
+function Element:_isElement(T)
     local mt = getmetatable(self)
     while mt do
         if mt == T then return true

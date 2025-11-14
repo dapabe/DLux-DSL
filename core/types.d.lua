@@ -2,25 +2,29 @@
 -----------------------------------
 --- Components
 ]]
----@alias DLux.SizeFactor {width: number, height: number} | {flexGrow: integer}
 
----@class DLux.UILayoutPrimitive
+--- These properties exists in the Yoga node
+---@class DLux.UIStyles
 ---@field x? number
 ---@field y? number
+---@field w? number
+---@field h? number
 ---@field padding? number | table<number, number> | table<number, number, number, number> # All sides | Vertical/horizontal | All sides independently
----@field size? DLux.SizeFactor
+---@field margin? number | table<number, number> | table<number, number, number, number> # All sides | Vertical/horizontal | All sides independently
+---@field flexGrow? integer
+---@field flexDir? "row" | "row-reverse" | "column" | "column-reverse"
+---@field flexJustify?  "start" | "center" | "end" | "between" | "around" | "evenly"
+---@field flexAlign? "auto" | "stretch" | "start" | "end" | "baseline" | "around" | "between" | "evenly"
 
----@class DLux.UINode: DLux.UILayoutPrimitive
----@field type string # Name of the node/component
----@field color? table<number, number, number, number>
----@field flexDirection? "row" | "column"
----@field flexJustify?  "start" | "center" | "end" | "between" | "around"
----@field flexAlign? "start" | "center" | "end" | "stretch"
----@field _computed? {x: number, y: number, width: number, height: number}
----@field children? DLux.UINode[]
+--- These properties exists in the component
+---@class DLux.UIPropsExtra: DLux.UIStyles
+---@field UINode? luyoga.Node # Defined inside the component
+---@field debugOutline? boolean # Default `false`
 
+--- Struct of a component
 ---@class DLux.UIComponent
----@field props DLux.UINode
+---@field name string # Name of the node/component
+---@field props DLux.UIPropsExtra
 ---@field children DLux.UIComponent[]
 ---@field _update? fun(self: self)
 ---@field _draw? fun(self: self)

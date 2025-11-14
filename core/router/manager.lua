@@ -1,3 +1,4 @@
+local Yoga = require("luyoga")
 
 ---@alias RouteEvent "enter" | "leave" | "pause" | "resume" |"push" | string
 
@@ -49,36 +50,72 @@ local function exclude(t1, t2)
 	return t
 end
 
----@class TLuxFileRoute
+---@class DLux.FileRoute
+---@field routeNode luyoga.Node
 ---@field emit fun(self: self, event: RouteEvent, ...)
----@field enter fun(self: self, next: TLuxFileRoute, ...)
----@field push fun(self: self, next: TLuxFileRoute, ...)
+---@field enter fun(self: self, next: DLux.FileRoute, ...)
+---@field push fun(self: self, next: DLux.FileRoute, ...)
 
----@class RouterManager: TLuxFileRoute
+---@class RouterManager: DLux.FileRoute
 local Manager = {}
 Manager.__index = Manager
 
 ---@protected
----@type TLuxFileRoute[]
+---@type DLux.FileRoute[]
 Manager.__routes = {}
+--- Root Yoga node for the whole app
+Manager.rootNode = Yoga.Node.new()
+
+-- Position root at (0,0)
+Manager.rootNode.style:setFlexGrow(1)
+Manager.rootNode.style:setFlexDirection(Yoga.Enums.FlexDirection.Column)
+
+-------------------------------------------------------------------
+-- INTERNAL
+-------------------------------------------------------------------
+
+---@param route DLux.FileRoute
+function Manager:_mountRoute(route)
+	assert(route and route.routeNode, "[RouteManager] Route requires luyoga node")
+	self.rootNode:removeAllChildren()
+	self.rootNode:insertChild(route.routeNode, 1)
+	self.rootNode:calculateLayout(0, 0, Yoga.Enums.Direction.LTR)
+end
 
 function Manager:emit(event, ...)
     local route = self.__routes[#self.__routes]
-    if route[event] then route[event](route, ...) end
+    if route and route[event] then route[event](route, ...) end
 end
 
+-------------------------------------------------------------------
+-- ROUTING API
+-------------------------------------------------------------------
+
+---@param next DLux.FileRoute
+---@param ... any[]
 function Manager:enter(next, ...)
+	assert(next, "[RouteManager] ERROR(enter): route cannot be nil")
     local previous = self.__routes[#self.__routes]
+
     self:emit("leave", next, ...)
     self.__routes[#self.__routes] = next
+
+	self:_mountRoute(next)
+
     self:emit("enter", previous, ...)
 end
 
-
+---@param next DLux.FileRoute
+---@param ... any[]
 function Manager:push(next, ...)
+	assert(next, "[RouteManager] ERROR(push): route cannot be nil")
     local previous = self.__routes[#self.__routes]
+
     self:emit("pause", next, ...)
     self.__routes[#self.__routes+1] = next
+
+   	self:_mountRoute(next)
+
     self:emit("enter", previous, ...)
 end
 
@@ -86,10 +123,19 @@ end
 function Manager:pop(...)
     local previous = self.__routes[#self.__routes]
     local next = self.__routes[#self.__routes - 1]
-    self:emit("leave", next, ...)
+	assert(next, "[RouteManager] ERROR(pop): no more routes in stack")
+    
+	self:emit("leave", next, ...)
     self.__routes[#self.__routes] =  nil
+
+	self:_mountRoute(next)
+
     self:emit("resume", previous, ...)
 end
+
+-------------------------------------------------------------------
+-- Love2D CALLBACK HOOKING
+-------------------------------------------------------------------
 
 ---@param options {include: string[], exclude: string[]}
 function Manager:hook(options)
@@ -105,6 +151,9 @@ function Manager:hook(options)
     end
 end
 
+-------------------------------------------------------------------
+-- PUBLIC: CREATE ROUTER
+-------------------------------------------------------------------
 function Manager.new()
     return setmetatable({{}}, Manager)
 end

@@ -1,6 +1,6 @@
 local Yoga = require("luyoga")
 
----@class DLux.ScrollViewPrimitive: ViewPrimitive
+---@class DLux.ScrollViewPrimitive: DLux.ViewPrimitive
 local ScrollView = require("View_primitive"):extend()
 
 ScrollView.scrollY = 0
@@ -124,8 +124,10 @@ function ScrollView:_draw(drawCallback)
     end
 end
 
+---@class DLux.UIScrollViewPrimitiveProps: DLux.UIPropsExtra
+---@field scrollSpeed? number
 
----@param props DLux.ScrollViewPrimitive
+---@param props DLux.UIScrollViewPrimitiveProps
 function ScrollView:new(props)
 
     self.scrollSpeed = props.scrollSpeed

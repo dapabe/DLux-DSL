@@ -1,64 +1,85 @@
 local Yoga = require("luyoga")
+local applyStyleProps = require("applyStyleProps")
+local Rect = require("Rect_primitive")
 
----@class ViewPrimitive: BoxPrimitive, DLux.UINode
----@field _update? fun(self: self) # Should be overriden when extended
-local View = require("Box_primitive"):extend()
+---@class DLux.ViewPrimitiveProps: DLux.RectPrimitiveProps
+---@field bgColor? table<number, number, number, number>
 
----@type luyoga.Node
-View.children = nil
-View.accumulatedHeight = 0
+---@class DLux.ViewPrimitive: DLux.RectPrimitive, DLux.ViewPrimitiveProps
+---@field children DLux.RectPrimitive[]
+---@field update? fun(self: self) # Should be overriden when extended
+local View = Rect:_extend()
 
-View.flexDirection = "row"
-View.flexJustify = "start"
-View.flexAlign = "start"
+--------------------------------------------------------------------
+-- CHILDREN MANAGEMENT
+--------------------------------------------------------------------
 
----@param children luyoga.Node
-function View:setChildren(children)
-    self.children = children
-    -- If the children doesn't have a width set, give it the width's of this node
-    if self.children and (self.children.layout:getWidth() == 0) then
-        self.children.style:setWidth(self.w)
+---@param child DLux.RectPrimitive
+---@param inherit? boolean
+function View:addChild(child, inherit)
+    assert(child ~= self, "ERROR: trying to add view as child of itself")
+    assert(child.UINode ~= self.UINode, "ERROR: trying to add UINode as child of itself")
+
+    if inherit or false then child:_inheritParentStyles(self) end
+
+    table.insert(self.children, child)
+    self.UINode:insertChild(child.UINode, #self.children)
+end
+
+---@param child DLux.RectPrimitive
+function View:removeChild(child)
+    for i,v in ipairs(self.children) do
+        if v == child then
+            self.UINode:removeChild(child.UINode)
+            table.remove(self.children, i)
+            return
+        end
     end
 end
 
--- Sync this rect with the computed parent node
-function View:syncFromParentNode()
-    if not self.UINode then return end
-    -- Read computed layout (after root:calculateLayout)
-    local lx = self.UINode.layout:getLeft() or 0
-    local ly = self.UINode.layout:getTop() or 0
-    local lw = self.UINode.layout:getWidth() or self.w
-    local lh = self.UINode.layout:getHeight() or self.h
-
-    self.x = lx
-    self.y = ly
-    self.w = lw
-    self.h = lh
-
-    -- Ensure children uses the available space
-    if self.children then self.children.style:setWidth(self.w) end
+function View:clearChildren()
+    for _,child in ipairs(self.children) do
+        self.UINode:removeChild(child.UINode)
+    end
+    self.children = {}
 end
 
-function View:_updateLayout()
-    if not self.children then return end
-    -- Prefer declared height if exists
-    local declaredH = self.children.layout:getHeight()
-    local calcH = declaredH and declaredH > 0 and declaredH or math.max(self.h, 2000)
+--------------------------------------------------------------------
+-- Love2D API
+--------------------------------------------------------------------
 
-    -- Pass real width, uses an exagerated calculated height if height its not declared
-    self.children:calculateLayout(self.w, calcH, Yoga.Enums.Direction.LTR)
-
-    -- Update accumulatedHeight
-    local realH = self.children.layout:getHeight() or calcH
-    self.accumulatedHeight = realH
+---@param dt number
+function View:update(dt)
+    for _,child in ipairs(self.children) do
+        if child.update then
+            child:update(dt)
+        end
+    end
 end
 
-function View:_draw()
-    love.graphics.setColor(self.color)
-    love.graphics.rectangle("fill",
-        self._computed.x, self._computed.y,
-        self._computed.width, self._computed.height
-    )
+function View:draw()
+    Rect.draw(self)
+
+    -- Draw children
+    local l = self.UINode.layout
+
+    love.graphics.push()
+        
+        love.graphics.translate(l:getLeft(), l:getTop())
+        
+        for _, child in ipairs(self.children) do
+            child:draw()
+        end
+
+    love.graphics.pop()
+end
+
+---@param props DLux.ViewPrimitiveProps
+function View:new(props)
+    ---@class DLux.ViewPrimitive
+    local base = Rect.new(self, props or {})
+    base.children = {}
+    return base
 end
 
 return View

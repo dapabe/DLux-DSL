@@ -5,7 +5,6 @@ package.path = package.path .. ";../?.lua;../?/init.lua"
 -- require("utils.printTable")
 
 -- local transpiler = require("transpiler.init")
-local Watcher = require("core.Watcher")
 local Layout = require("core.components.Layout")
 
 local TLux = {}
@@ -29,19 +28,11 @@ local _layout
 
 function TLux.bootstrap(dirPath)
   print("[TLux] Init")
-  Watcher.track("components/Layout.lua", function ()
-    package.loaded["_layout"] = nil
-    _layout = dofile("components/Layout.lua")
-  end)
-  Watcher.track(dirPath, function()
-    package.loaded["tree"] = nil
-    tree = dofile(dirPath)
-  end)
+
   Layout.compute(tree, love.graphics.getWidth(), love.graphics.getHeight())
 end
 
 function TLux.update(dt)
-  Watcher.update()
   if tree then
   end
 end

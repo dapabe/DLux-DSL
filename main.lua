@@ -2,62 +2,58 @@ require("core.utils.printTable")
 local localLibs = "./libs/share/lua/5.4/?.lua;./libs/share/lua/5.4/?/init.lua;"
 local localLibs_C = "./libs/lib/lua/5.4/?.so;"
 local coreLib = "./core/components/primitives/?.lua;"
+local utils = "./core/utils/?.lua;./core/hmr/?.lua;"
 
-package.path =  localLibs..coreLib..package.path
+package.path = localLibs..coreLib..utils..package.path
 package.cpath =  localLibs_C..package.cpath
 
-local Yoga = require("luyoga")
+local Yoga = require ("luyoga")
 
-local ScrollView = require ("ScrollView_primitive")
+local Watcher = require("watcher")
+local Refresh = require("refresh")
 
-local items = {}
-for i = 1, 40 do
-    table.insert(items, "Item " .. i)
-end
+local w
 
-
+---@type DLux.ViewPrimitive
 local root
----@type DLux.ScrollViewPrimitive
-local sv
+local View = require("View_primitive")
+local Rect = require("Rect_primitive")
 
 function love.load()
-    sv = ScrollView:new({
-        x = 50,
-        y = 50,
-        w = 300,
-        h = 250,
-        accumulatedHeight = #items * 40
-    })
-end
+    w = Watcher.new("", 0.5)
 
+    love.window.setMode(400, 600)
+    root = root or View:new({ w=400, h=600, bgColor={0.2,0.2,0.2} })
 
+    local header = View:new({h=50, flexDir="row", flexJustify = "between", bgColor={1,1,1}}) -- White
+    local box1 = Rect:new({ w=50, h=50, bgColor={0,0,1}})
+    local box2 = Rect:new({ w=50, h=50, bgColor={0,1,1}})
+    header:addChild(box1)
+    header:addChild(box2)
+    
+    local body   = View:new({flexGrow=.2, bgColor={.8,0.1,0.3}, debugOutline = true}) -- Red box
 
-function love.mousepressed(x, y, b)
-    sv:mousePressed(x, y, b)
-end
+    root:addChild(header)
+    root:addChild(body)
 
-function love.mousereleased(x, y, b)
-    sv:mouseReleased(x, y, b)
-end
-
-local wheelY = 0
-
-function love.wheelmoved(x, y)
-    wheelY = y
+    root.UINode.style:setFlexDirection(Yoga.Enums.FlexDirection.Column)
+    root.UINode:calculateLayout(400, 500, Yoga.Enums.Direction.LTR)
 end
 
 function love.update(dt)
-    local mx, my = love.mouse.getPosition()
-    sv:_update(dt, mx, my, wheelY)
-    wheelY = 0 -- Consume the event
+    local changed = w:update(dt)
+    if changed then
+        print("[HMR] archivo modificado:", changed)
+
+        -- convierte "src/components/Button.lua" -> "src.components.Button"
+        local modulePath = changed
+            :gsub("%.lua", "")
+            :gsub("/", ".")
+
+        Refresh.reload(modulePath)
+    end
 end
 
 function love.draw()
-    love.graphics.clear(0.15, 0.15, 0.15)
-    sv:_draw(function()
-        love.graphics.setColor(1, 1, 1)
-        for i, text in ipairs(items) do
-            love.graphics.print(text, 10, (i - 1) * 40)
-        end
-    end)
+    if root then root:draw() end
 end
