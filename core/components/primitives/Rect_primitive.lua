@@ -1,4 +1,3 @@
-local Yoga = require("luyoga")
 local applyStyleProps = require("applyStyleProps")
 
 ---@class DLux.RectPrimitiveProps: DLux.UIPropsExtra

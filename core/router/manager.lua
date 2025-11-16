@@ -1,3 +1,4 @@
+local View_primitive = require "View_primitive"
 
 ---@alias RouteEvent "enter" | "leave" | "pause" | "resume" |"push" | string
 
@@ -49,9 +50,17 @@ local function exclude(t1, t2)
 	return t
 end
 
+---@alias AnimMode "slide" | "fade"
+
+---@class TransitionAnimation
+---@field mode AnimMode
+---@field reverse boolean
+
 ---@class RouterManager
 ---@field _routes DLux.FileRoute[]
----@field rootNode luyoga.Node
+---@field _tabs DLux.FileRoute[]
+---@field _transition 
+---@field rootNode DLux.ViewPrimitive
 local Manager = {}
 Manager.__index = Manager
 
@@ -60,11 +69,15 @@ Manager.__index = Manager
 -------------------------------------------------------------------
 
 ---@param route DLux.FileRoute
+---@return DLux.FileRoute
 function Manager:_mountRoute(route)
+	route = route:new()
 	assert(route and route.routeNode, "[RouteManager] ERROR(_mountRoute) route requires luyoga node")
-	self.rootNode:removeAllChildren()
-	self.rootNode:insertChild(route.routeNode.UINode, 1)
-	self.rootNode:calculateLayout(0, 0, Yoga.Enums.Direction.LTR)
+	self.rootNode:addChild(route.routeNode)
+	self.rootNode.UINode:removeAllChildren()
+	self.rootNode.UINode:insertChild(route.routeNode.UINode, 1)
+	self.rootNode.UINode:calculateLayout(self.rootNode.UINode.layout:getWidth(), self.rootNode.UINode.layout:getHeight(), Yoga.Enums.Direction.LTR)
+	return route
 end
 
 ---@param event RouteEvent
@@ -78,12 +91,12 @@ end
 -------------------------------------------------------------------
 
 ---@param next DLux.FileRoute
+---@param animation AnimMode
 ---@param ... any[]
-function Manager:enter(next, ...)
+function Manager:enter(next, animation, ...)
 	assert(next, "[RouteManager] ERROR(enter): route cannot be nil")
     local previous = self._routes[#self._routes]
-	print(tostring(next))
-
+	
     self:emit("leave", next, ...)
     self._routes[#self._routes] = next
 
@@ -101,8 +114,9 @@ function Manager:push(next, ...)
     self:emit("pause", next, ...)
     self._routes[#self._routes+1] = next
 
-   	self:_mountRoute(next)
+   	next = self:_mountRoute(next)
 
+	self:pushAnimation(next, previous)
     self:emit("enter", previous, ...)
 end
 
@@ -118,6 +132,36 @@ function Manager:pop(...)
 	self:_mountRoute(next)
 
     self:emit("resume", previous, ...)
+end
+
+-------------------------------------------------------------------
+-- TRANSITION ANIMATION
+-------------------------------------------------------------------
+
+---@param next DLux.FileRoute
+---@param prev DLux.FileRoute | nil
+---@param mode? "slide" | "fade" # Defaults to slide
+function Manager:pushAnimation(next, prev, mode)
+	if prev then
+		self.transition = {
+			mode = mode or "slide",
+			prev = prev,
+			next = next,
+			reverse = true
+		}
+		self.t = 0
+	end
+end
+
+function Manager:popAnimation()
+end
+
+-------------------------------------------------------------------
+-- TABS
+-------------------------------------------------------------------
+
+function Manager:setTabs(tabs, index)
+	self._tabs = tabs
 end
 
 -------------------------------------------------------------------
@@ -144,24 +188,29 @@ end
 
 ---@param dt number
 function Manager:update(dt)
-	local r = self._routes[#self._routes]
-	if r then r:update(dt) end
+	self.rootNode:update(dt)
+	-- self._routes[#self._routes]:update(dt)
 end
 
 function Manager:draw()
-	local r = self._routes[#self._routes]
-	if r then r:draw() end
+	self.rootNode:draw()
+	-- self._routes[#self._routes]:draw()
 end
 
-function Manager.new()
+local Router = {}
+
+function Manager:initYoga(width, height)
+	self.rootNode = View_primitive:new({w= width, h= height})
+	self.rootNode.UINode.style:setFlexGrow(1)
+	self.rootNode.UINode.style:setFlexDirection(Yoga.Enums.FlexDirection.Column)
+	self.rootNode.UINode:calculateLayout(width, height, Yoga.Enums.Direction.LTR)
+end
+
+function Router.new()
     local o = setmetatable({}, Manager)
 	o._routes = {}
-	
-	o.rootNode = Yoga.Node.new()
-	o.rootNode.style:setFlexGrow(1)
-	o.rootNode.style:setFlexDirection(Yoga.Enums.FlexDirection.Column)
-
+	o._tabs = {}
 	return o
 end
 
-return Manager
+return Router

@@ -1,5 +1,4 @@
 
-local Manager = require("router.manager")
 
 local Router = {}
 

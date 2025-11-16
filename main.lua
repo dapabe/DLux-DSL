@@ -1,8 +1,5 @@
 require("globals")
 
-
-require("core.utils.printTable")
-
 local Watcher = require("watcher")
 local Refresh = require("refresh")
 
@@ -12,10 +9,10 @@ function love.load()
     w = Watcher.new("", 0.5)
 
     love.window.setMode(400, 600)
-
+    RouterManager:initYoga(400, 600)
     RouterManager:hook()
-    local RootRoute = require("routes.root").new()
-    RouterManager:enter(RootRoute)
+
+    RouterManager:enter(require("routes.root"))
 end
 
 function love.update(dt)

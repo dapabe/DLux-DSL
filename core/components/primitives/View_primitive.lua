@@ -1,4 +1,3 @@
-local Yoga = require("luyoga")
 local applyStyleProps = require("applyStyleProps")
 local Rect = require("Rect_primitive")
 
@@ -7,7 +6,6 @@ local Rect = require("Rect_primitive")
 
 ---@class DLux.ViewPrimitive: DLux.RectPrimitive, DLux.ViewPrimitiveProps
 ---@field children DLux.RectPrimitive[]
----@field update? fun(self: self) # Should be overriden when extended
 local View = Rect:_extend()
 
 --------------------------------------------------------------------
@@ -48,7 +46,6 @@ end
 -- Love2D API
 --------------------------------------------------------------------
 
----@param dt number
 function View:update(dt)
     for _,child in ipairs(self.children) do
         if child.update then

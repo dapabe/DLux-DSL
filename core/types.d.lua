@@ -34,8 +34,18 @@
 --- Routing
 ]]
 
+---@class DLux.FileTransition
+---@field stack table
+---@field mode "slide" | "fade"
+---@field type nil
+---@field t number
+---@field duration number
+
 ---@class DLux.FileRoute
 ---@field routeNode DLux.ViewPrimitive
+---@field routeName string
+---@field transition DLux.FileTransition
+---@field new fun(self: self): DLux.FileRoute
 ---@field enter fun(self: self, next: DLux.FileRoute, ...) # next could be nil in case of being the first route
 ---@field leave fun(self: self, next: DLux.FileRoute, ...) # Leaving this route and navigation to 'next'
 ---@field pause fun(self: self, ...)

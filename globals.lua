@@ -6,6 +6,9 @@ local utils = "./core/utils/?.lua;./core/hmr/?.lua;"
 package.path = localLibs..coreLib..utils..package.path
 package.cpath =  localLibs_C..package.cpath
 
+require("core.utils.printTable")
+
+
 
 _G.Yoga = require("luyoga")
 _G.RouterManager = require("core.router.manager").new()
