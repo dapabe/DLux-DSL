@@ -1,4 +1,5 @@
-local View_primitive = require "View_primitive"
+
+local SceneContainer = require("core.components.SceneContainer")
 
 ---@alias RouteEvent "enter" | "leave" | "pause" | "resume" |"push" | string
 
@@ -38,6 +39,24 @@ local loveCallbacks = {
 	'joystickadded',
 }
 
+---@param duration number
+---@param callback function
+---@param finish? function
+---@return table
+local function animate(duration, callback, finish)
+	local t = 0
+    local anim = {}
+
+    function anim:update(dt)
+        t = t + dt
+        local k = math.min(t/duration, 1)
+        callback(k)
+        if k == 1 and finish then finish(); return true end
+    end
+
+    return anim
+end
+
 -- returns a list of all the items in t1 that aren't in t2
 local function exclude(t1, t2)
 	local set = {}
@@ -54,13 +73,14 @@ end
 
 ---@class TransitionAnimation
 ---@field mode AnimMode
----@field reverse boolean
+---@field prev DLux.FileRoute
+---@field next DLux.FileRoute
+---@field reverse? boolean
 
 ---@class RouterManager
 ---@field _routes DLux.FileRoute[]
 ---@field _tabs DLux.FileRoute[]
----@field _transition 
----@field rootNode DLux.ViewPrimitive
+---@field rootNode luyoga.Node
 local Manager = {}
 Manager.__index = Manager
 
@@ -71,18 +91,21 @@ Manager.__index = Manager
 ---@param route DLux.FileRoute
 ---@return DLux.FileRoute
 function Manager:_mountRoute(route)
-	route = route:new()
 	assert(route and route.routeNode, "[RouteManager] ERROR(_mountRoute) route requires luyoga node")
-	self.rootNode:addChild(route.routeNode)
-	self.rootNode.UINode:removeAllChildren()
-	self.rootNode.UINode:insertChild(route.routeNode.UINode, 1)
-	self.rootNode.UINode:calculateLayout(self.rootNode.UINode.layout:getWidth(), self.rootNode.UINode.layout:getHeight(), Yoga.Enums.Direction.LTR)
+	self.rootNode:removeAllChildren()
+	self.rootNode:insertChild(route.routeNode.UINode, 1)
+	self.rootNode:calculateLayout(self.rootNode.layout:getWidth(), self.rootNode.layout:getHeight(), Yoga.Enums.Direction.LTR)
 	return route
+end
+
+
+function Manager:_getTopRoute()
+	return self._routes[#self._routes]
 end
 
 ---@param event RouteEvent
 function Manager:emit(event, ...)
-    local route = self._routes[#self._routes]
+    local route = self:_getTopRoute()
     if route and route[event] then route[event](route, ...) end
 end
 
@@ -91,69 +114,45 @@ end
 -------------------------------------------------------------------
 
 ---@param next DLux.FileRoute
----@param animation AnimMode
+-- ---@param animation AnimMode
 ---@param ... any[]
-function Manager:enter(next, animation, ...)
+function Manager:enter(next, ...)
 	assert(next, "[RouteManager] ERROR(enter): route cannot be nil")
     local previous = self._routes[#self._routes]
 	
     self:emit("leave", next, ...)
-    self._routes[#self._routes] = next
-
-	self:_mountRoute(next)
+    self._routes[#self._routes] = self:_mountRoute(next)
 
     self:emit("enter", previous, ...)
 end
 
 ---@param next DLux.FileRoute
+---@param mode AnimMode
 ---@param ... any[]
-function Manager:push(next, ...)
+function Manager:push(next, mode, ...)
 	assert(next, "[RouteManager] ERROR(push): route cannot be nil")
-    local previous = self._routes[#self._routes]
+    local previous = self:_getTopRoute()
 
     self:emit("pause", next, ...)
-    self._routes[#self._routes+1] = next
+    self._routes[#self._routes+1] = self:_mountRoute(next)
 
-   	next = self:_mountRoute(next)
-
-	self:pushAnimation(next, previous)
     self:emit("enter", previous, ...)
 end
 
 --- Deletes the current route from the stack and returns to the previous one
 function Manager:pop(...)
-    local previous = self._routes[#self._routes]
     local next = self._routes[#self._routes - 1]
-	assert(next, "[RouteManager] ERROR(pop): no more routes in stack")
-    
+	if not next then
+		print("[RouteManager] ERROR(pop): no more routes in stack")
+		return
+	end
+    local previous = self:_getTopRoute()
+
+
 	self:emit("leave", next, ...)
     self._routes[#self._routes] =  nil
 
-	self:_mountRoute(next)
-
     self:emit("resume", previous, ...)
-end
-
--------------------------------------------------------------------
--- TRANSITION ANIMATION
--------------------------------------------------------------------
-
----@param next DLux.FileRoute
----@param prev DLux.FileRoute | nil
----@param mode? "slide" | "fade" # Defaults to slide
-function Manager:pushAnimation(next, prev, mode)
-	if prev then
-		self.transition = {
-			mode = mode or "slide",
-			prev = prev,
-			next = next,
-			reverse = true
-		}
-		self.t = 0
-	end
-end
-
-function Manager:popAnimation()
 end
 
 -------------------------------------------------------------------
@@ -188,22 +187,49 @@ end
 
 ---@param dt number
 function Manager:update(dt)
-	self.rootNode:update(dt)
-	-- self._routes[#self._routes]:update(dt)
+	local top = self:_getTopRoute()
+	InputManager:_update(dt, top.routeNode)
+	if top and top.update then top:update(dt) end
 end
 
 function Manager:draw()
-	self.rootNode:draw()
-	-- self._routes[#self._routes]:draw()
+	local top = self:_getTopRoute()
+	if top and top.draw then top:draw() end
+	-- if not self.transition then
+	-- 	return
+	-- end
+
+	-- local mode = self.transition.mode
+	-- local prev = self.transition.prev
+	-- local next = self.transition.next
+	-- local t = self.t / self.duration
+	-- local w = love.graphics.getWidth()
+
+	-- if mode == "slide" then
+	-- 	love.graphics.push()
+	-- 		love.graphics.translate(-w * t, 0)
+	-- 		prev:draw()
+	-- 	love.graphics.pop()
+
+	-- 	love.graphics.push()
+	-- 		love.graphics.translate(w - w * t, t)
+	-- 		next:draw()
+	-- 	love.graphics.pop()
+	-- elseif mode == "fade" then
+	-- 	prev:draw()
+	-- 	love.graphics.setColor(1, 1, 1, t)
+	-- 	next:draw()
+	-- 	love.graphics.setColor(1, 1, 1, 1)
+	-- end
 end
 
 local Router = {}
 
 function Manager:initYoga(width, height)
-	self.rootNode = View_primitive:new({w= width, h= height})
-	self.rootNode.UINode.style:setFlexGrow(1)
-	self.rootNode.UINode.style:setFlexDirection(Yoga.Enums.FlexDirection.Column)
-	self.rootNode.UINode:calculateLayout(width, height, Yoga.Enums.Direction.LTR)
+	self.rootNode = Yoga.Node.new()
+	self.rootNode.style:setFlexGrow(1)
+	self.rootNode.style:setFlexDirection(Yoga.Enums.FlexDirection.Column)
+	self.rootNode:calculateLayout(width, height, Yoga.Enums.Direction.LTR)
 end
 
 function Router.new()

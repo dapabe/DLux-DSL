@@ -1,24 +1,38 @@
 local applyStyleProps = require("applyStyleProps")
 local Rect = require("Rect_primitive")
 
----@class DLux.ViewPrimitiveProps: DLux.RectPrimitiveProps
----@field bgColor? table<number, number, number, number>
+---@class DLux.ViewPrimitiveProps: DLux.RectPrimitive
+---@field children? DLux.RectPrimitive[] # [INTERNAL]
 
----@class DLux.ViewPrimitive: DLux.RectPrimitive, DLux.ViewPrimitiveProps
----@field children DLux.RectPrimitive[]
+---@class DLux.ViewPrimitive: DLux.ViewPrimitiveProps
 local View = Rect:_extend()
+
+--------------------------------------------------------------------
+-- OVERRIDES
+--------------------------------------------------------------------
+
+function View:_hitTest(mx, my)
+    -- Checks children first, z-order
+    for i = #self.children, 1, -1 do
+        local h = self.children[i]:_hitTest(mx, my)
+        if h then return h end
+    end
+
+    return Rect._hitTest(self, mx, my)
+end
 
 --------------------------------------------------------------------
 -- CHILDREN MANAGEMENT
 --------------------------------------------------------------------
 
----@param child DLux.RectPrimitive
+---@param child DLux.ElementPrimitive
 ---@param inherit? boolean
 function View:addChild(child, inherit)
+    print("here")
     assert(child ~= self, "ERROR: trying to add view as child of itself")
     assert(child.UINode ~= self.UINode, "ERROR: trying to add UINode as child of itself")
 
-    if inherit or false then child:_inheritParentStyles(self) end
+    -- if inherit or false then child:_inheritParentStyles(self) end
 
     table.insert(self.children, child)
     self.UINode:insertChild(child.UINode, #self.children)
@@ -71,12 +85,13 @@ function View:draw()
     love.graphics.pop()
 end
 
----@param props DLux.ViewPrimitiveProps
+---@param props? DLux.ViewPrimitiveProps
 function View:new(props)
     ---@class DLux.ViewPrimitive
-    local base = Rect.new(self, props or {})
-    base.children = {}
-    return base
+    local o = Rect.new(self, props)
+    o._ElementName = "ViewPrimitive"
+    o.children = {}
+    return o
 end
 
 return View

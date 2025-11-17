@@ -44,13 +44,12 @@
 ---@class DLux.FileRoute
 ---@field routeNode DLux.ViewPrimitive
 ---@field routeName string
----@field transition DLux.FileTransition
 ---@field new fun(self: self): DLux.FileRoute
 ---@field enter fun(self: self, next: DLux.FileRoute, ...) # next could be nil in case of being the first route
 ---@field leave fun(self: self, next: DLux.FileRoute, ...) # Leaving this route and navigation to 'next'
 ---@field pause fun(self: self, ...)
 ---@field resume fun(self: self, ...)
----@field keypressed fun(self: self, key: love.keypressed)
+---@field keypressed love.keypressed
 ---@field update fun(self: self, dt: number)
 ---@field draw fun(self: self)
 

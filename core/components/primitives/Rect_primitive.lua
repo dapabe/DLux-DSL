@@ -1,20 +1,14 @@
-local applyStyleProps = require("applyStyleProps")
+local Element = require("Element_primitive")
 
----@class DLux.RectPrimitiveProps: DLux.UIPropsExtra
----@field bgColor? table<number, number, number, number>
----@field borderRadius? table<number, number> # X, Y
+---@class DLux.RectPrimitiveProps: DLux.ElementPrimitive
 
----@class DLux.RectPrimitive: DLux.ElementPrimitive, DLux.RectPrimitiveProps
+---@class DLux.RectPrimitive: DLux.RectPrimitiveProps
 ---@field update? fun(self: self, dt: number)
-local Rect = require("Element_primitive"):_extend()
+local Rect = Element:_extend()
 
-function Rect:_drawDebugOutline()
-    local l = self.UINode.layout
-    love.graphics.setColor(0, 1, 0)
-    love.graphics.setLineWidth(2)
-    love.graphics.rectangle("line", l:getLeft(), l:getTop(), l:getWidth(), l:getWidth())
-    -- love.graphics.setColor(1,1,1,1)
-end
+--------------------------------------------------------------------
+-- INTERNAL
+--------------------------------------------------------------------
 
 ---@param parent DLux.RectPrimitive
 function Rect:_inheritParentStyles(parent)
@@ -22,9 +16,9 @@ function Rect:_inheritParentStyles(parent)
     self.borderRadius = parent.borderRadius
 end
 
-function Rect:__tostring()
-    return "RectPrimitive"
-end
+--------------------------------------------------------------------
+-- PUBLIC
+--------------------------------------------------------------------
 
 function Rect:draw()
     if not self.UINode or not self.UINode.layout then return end
@@ -36,21 +30,19 @@ function Rect:draw()
         l:getWidth(), l:getHeight(),
         self.borderRadius[1], self.borderRadius[2]
     )
-    if self.debugOutline then self:_drawDebugOutline() end
+    if self.debugOutline then
+        love.graphics.setColor(0, 1, 0)
+        love.graphics.setLineWidth(2)
+        love.graphics.rectangle("line", l:getLeft(), l:getTop(), l:getWidth(), l:getWidth())
+     end
 end
 
----@param props DLux.RectPrimitiveProps
+---@param props? DLux.RectPrimitiveProps
 function Rect:new(props)
     ---@class DLux.RectPrimitive
-    local obj = setmetatable({}, self)
-    obj.UINode = Yoga.Node.new()
-    applyStyleProps(obj.UINode.style, props or {})
-
-    obj.debugOutline = props.debugOutline or false
-    obj.bgColor = props.bgColor or {0, 0, 0, 0}
-    obj.borderRadius = props.borderRadius or {0, 0}
-
-    return obj
+    local o = Element.new(self, props)
+    o._ElementName = "RectPrimitive"
+    return o
 end
 
 return Rect
