@@ -1,4 +1,3 @@
-local applyStyleProps = require("applyStyleProps")
 local Rect = require("Rect_primitive")
 
 ---@class DLux.ViewPrimitiveProps: DLux.RectPrimitive
@@ -28,7 +27,6 @@ end
 ---@param child DLux.ElementPrimitive
 ---@param inherit? boolean
 function View:addChild(child, inherit)
-    print("here")
     assert(child ~= self, "ERROR: trying to add view as child of itself")
     assert(child.UINode ~= self.UINode, "ERROR: trying to add UINode as child of itself")
 
@@ -59,7 +57,7 @@ end
 --------------------------------------------------------------------
 -- Love2D API
 --------------------------------------------------------------------
-
+---@param dt number
 function View:update(dt)
     for _,child in ipairs(self.children) do
         if child.update then
@@ -77,7 +75,7 @@ function View:draw()
     love.graphics.push()
         
         love.graphics.translate(l:getLeft(), l:getTop())
-        
+
         for _, child in ipairs(self.children) do
             child:draw()
         end

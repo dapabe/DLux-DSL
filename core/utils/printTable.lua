@@ -5,12 +5,21 @@ _G.printTable = function(tbl, indent)
   for k, v in pairs(tbl) do
     formatting = string.rep("  ", indent) .. k .. ": "
     if type(v) == "table" then
-      print(formatting)
-      printTable(v, indent+1)
+      if #v > 0 then 
+        print(formatting.."{")
+        printTable( v, indent+1)
+        print(formatting.rep("  ", indent).."}")
+      else
+        print(formatting.."{}")
+      end
     elseif type(v) == 'boolean' then
       print(formatting .. tostring(v))
-	else
-      print(formatting .. type(v))
+	  elseif type(v) == "number" then
+      print(formatting .. v)
+    elseif type(v) == "string" then
+      print(formatting .. v)
+    else
+      print(formatting .. ("<%s>"):format(type(v)))
     end
   end
 end

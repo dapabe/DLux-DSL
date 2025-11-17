@@ -7,6 +7,7 @@ FileRoute.__index = FileRoute
 function FileRoute:new()
     local o = setmetatable({}, FileRoute)
     o.routeNode = View:new({flexGrow = 1})
+    printTable(o.routeNode)
     return o
 end
 

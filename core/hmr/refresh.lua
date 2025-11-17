@@ -17,11 +17,11 @@ function Refresh.reload(modulePath)
 
     local ok, newModule = pcall(require, modulePath)
     if not ok then
-        print("[HMR] Error cargando " .. modulePath .. ": " .. tostring(newModule))
+        print("[HMR] Error loading " .. modulePath .. ": " .. tostring(newModule))
         return
     end
 
-    print("[HMR] Patcheando módulo:", modulePath)
+    print("[HMR] Module patched:", "<rootDir>"..modulePath)
 
     -- patch a todas las instancias
     local instances = Refresh.instances[modulePath]

@@ -14,9 +14,9 @@ local applyStyleProps = require "applyStyleProps"
 ---@field cursorHover? string
 
 ---@class DLux.ElementPrimitive: DLux.ElementPrimitiveProps
+---@field _hitTest? fun(self: self, mx: number, my: number): self | nil
 local Element = {}
 Element.__index = Element
-Element._ElementName = "ElementPrimitive"
 
 --------------------------------------------------------------------
 -- INTERNAL
@@ -50,10 +50,6 @@ function Element:_isElement(T)
     return false
 end
 
-function Element:__tostring()
-    return self._ElementName
-end
-
 function Element:__call(...)
     return setmetatable({}, self):new()
 end
@@ -67,21 +63,6 @@ end
 --------------------------------------------------------------------
 -- HIT TEST (Triggered by input manager)
 --------------------------------------------------------------------
-
-function Element:_hitTest(mx, my)
-    local l = self.UINode.layout
-    if not l then return nil end
-    local x = l:getLeft()
-    local y = l:getTop()
-    local w = l:getWidth()
-    local h = l:getHeight()
-
-    if mx >= x and mx <= x + w and my >= y and my <= y + h then
-        return self
-    end
-    return nil
-end
-
 
 function Element:_handleMouseMove(mx, my)
     local inside = self:_hitTest(mx, my)
@@ -124,22 +105,12 @@ function Element:onPress(mx, my, btn) end
 ---@param btn integer # Mouses can have more than 3 buttons, wheel counts as a the 3rd button
 function Element:onRelease(mx, my, btn) end
 
+---@param dt number
+function Element:update(dt) end
 function Element:draw() end
 
 ---@param props? DLux.ElementPrimitiveProps
 function Element:new(props)
-    local o = setmetatable({}, Element)
-    o.UINode = Yoga.Node.new()
-    props = props or {}
-    applyStyleProps(o.UINode.style , props)
-    o.debugOutline = props.debugOutline or false
-    o.bgColor = props.bgColor or {0, 0, 0, 0}
-    o.borderRadius = props.borderRadius or {0, 0}
-
-
-    o:_resetEventState()
-    InputManager:register(o)
-    return o
 end
 
 

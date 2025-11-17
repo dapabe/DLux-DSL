@@ -1,4 +1,5 @@
 local Element = require("Element_primitive")
+local applyStyleProps = require("applyStyleProps")
 
 ---@class DLux.RectPrimitiveProps: DLux.ElementPrimitive
 
@@ -14,6 +15,20 @@ local Rect = Element:_extend()
 function Rect:_inheritParentStyles(parent)
     self.bgColor = parent.bgColor
     self.borderRadius = parent.borderRadius
+end
+
+function Rect:_hitTest(mx, my)
+    local l = self.UINode.layout
+    if not l then return nil end
+    local x = l:getLeft()
+    local y = l:getTop()
+    local w = l:getWidth()
+    local h = l:getHeight()
+
+    if mx >= x and mx <= x + w and my >= y and my <= y + h then
+        return self
+    end
+    return nil
 end
 
 --------------------------------------------------------------------
@@ -34,14 +49,23 @@ function Rect:draw()
         love.graphics.setColor(0, 1, 0)
         love.graphics.setLineWidth(2)
         love.graphics.rectangle("line", l:getLeft(), l:getTop(), l:getWidth(), l:getWidth())
-     end
+    end
 end
 
 ---@param props? DLux.RectPrimitiveProps
 function Rect:new(props)
-    ---@class DLux.RectPrimitive
-    local o = Element.new(self, props)
-    o._ElementName = "RectPrimitive"
+    local o = setmetatable({}, Rect)
+    o._ElementName = "ElementPrimitive"
+    o.UINode = Yoga.Node.new()
+    props = props or {}
+    applyStyleProps(o.UINode.style, props)
+    o.debugOutline = props.debugOutline or false
+    o.bgColor = props.bgColor or { 0, 0, 0, 0 }
+    o.borderRadius = props.borderRadius or { 0, 0 }
+
+
+    o:_resetEventState()
+    InputManager:register(o)
     return o
 end
 

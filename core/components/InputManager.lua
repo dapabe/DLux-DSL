@@ -86,8 +86,8 @@ end
 ---@param dt number
 ---@param root DLux.ViewPrimitive
 function InputManager:_update(dt, root)
-    self:updateHover( root)
-    self:applyCursor()
+    -- self:updateHover( root)
+    -- self:applyCursor()
 end
 
 local cbs = {

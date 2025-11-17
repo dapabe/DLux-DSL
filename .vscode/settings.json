@@ -10,10 +10,5 @@
     ],
     "Lua.hint.enable": true,
     "Lua.format.enable": true,
-    "Lua.diagnostics.globals": [
-    ],
-    "Lua.diagnostics.disable": [
-        "duplicate-doc-field",
-        "duplicate-set-field"
-    ]
+    "editor.formatOnSave": true
 }
