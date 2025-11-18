@@ -51,9 +51,9 @@ local STYLE_MAP = {
             s:setPadding(Yoga.Enums.Edge.Vertical, v[2] or 0)
         else
             s:setPadding(Yoga.Enums.Edge.Top, v[1] or 0)
-            s:setPadding(Yoga.Enums.Edge.Right, v[2] or 0)
+            s:setPadding(Yoga.Enums.Edge.Left, v[2] or 0)
             s:setPadding(Yoga.Enums.Edge.Bottom, v[3] or 0)
-            s:setPadding(Yoga.Enums.Edge.Left, v[4] or 0)
+            s:setPadding(Yoga.Enums.Edge.Right, v[4] or 0)
         end
     end,
     margin = function(s, v)
@@ -64,9 +64,17 @@ local STYLE_MAP = {
             s:setMargin(Yoga.Enums.Edge.Vertical, v[2] or 0)
         else
             s:setMargin(Yoga.Enums.Edge.Top, v[1] or 0)
-            s:setMargin(Yoga.Enums.Edge.Right, v[2] or 0)
+            s:setMargin(Yoga.Enums.Edge.Left, v[2] or 0)
             s:setMargin(Yoga.Enums.Edge.Bottom, v[3] or 0)
-            s:setMargin(Yoga.Enums.Edge.Left, v[4] or 0)
+            s:setMargin(Yoga.Enums.Edge.Right, v[4] or 0)
+        end
+    end,
+    borderRadius = function(s, v)
+        if type(v) == "number" then
+            s:setBorder(Yoga.Enums.Edge.All, v)
+        elseif #v == 2 then
+            s:setBorder(Yoga.Enums.Edge.Horizontal, v[1] or 0)
+            s:setBorder(Yoga.Enums.Edge.Vertical, v[2] or 0)
         end
     end
 }

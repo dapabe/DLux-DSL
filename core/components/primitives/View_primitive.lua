@@ -1,5 +1,5 @@
 ---@class DLux.ViewPrimitiveProps: DLux.RectPrimitive
----@field children? DLux.RectPrimitive[] # [INTERNAL]
+---@field children? DLux.ElementPrimitive[] # [INTERNAL]
 
 ---@class DLux.ViewPrimitive: DLux.ViewPrimitiveProps
 local View = require("Rect_primitive"):_extend()
@@ -32,6 +32,8 @@ function View:addChild(child, inherit)
 
     table.insert(self.children, child)
     self.UINode:insertChild(child.UINode, #self.children)
+
+    if child._onChildAdded then child:_onChildAdded(self.UINode) end
 end
 
 ---@param child DLux.RectPrimitive
@@ -65,7 +67,7 @@ function View:update(dt)
 end
 
 function View:draw()
-    self.super.draw(self)
+    View.super.draw(self)
 
     -- Draw children
     local l = self.UINode.layout

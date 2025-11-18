@@ -16,6 +16,19 @@ function FileRoute:extend()
     return cls
 end
 
+function FileRoute:keypressed(key)
+    if DEBUG and key == "r" then
+        -- print("Reload " .. self.routeName)
+        local currentChildren = self.routeNode.children
+        -- self.routeNode:clearChildren()
+        -- for _, child in ipairs(currentChildren) do
+        --     self.routeNode:addChild(child)
+        -- end
+        -- self.routeNode.UINode:calculateLayout(nil, nil, Yoga.Enums.Direction.LTR)
+        RouterManager:refresh()
+    end
+end
+
 function FileRoute:update(dt)
     self.routeNode:update(dt)
 end

@@ -217,8 +217,12 @@ end
 ---@param dt number
 function Manager:update(dt)
 	local top = self:_getTopRoute()
-	InputManager:_update(dt, top.routeNode)
+	-- InputManager:_update(dt, top.routeNode)
+
 	if top and top.update then top:update(dt) end
+
+	-- local r = self.rootNode
+	-- r:calculateLayout(r.layout:getWidth(), r.layout:getHeight(), Yoga.Enums.Direction.LTR)
 end
 
 function Manager:draw()

@@ -21,6 +21,7 @@ _G.GUI = {
     Rect = require("Rect_primitive"),
     Text = require("Text_primitive"),
     View = require("View_primitive"),
+    Button = require("Button_primitive")
 }
 
 _G.Yoga = require("luyoga")

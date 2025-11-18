@@ -10,7 +10,7 @@ local applyNodeProps = require "applyNodeProps"
 ---@class DLux.ElementPrimitiveProps: DLux.UIPropsExtra, PrimitiveEventProps
 ---@field _ElementName? string
 ---@field bgColor? table<number, number, number, number>
----@field borderRadius? table<number, number> # X, Y
+---@field borderRadius? number | table<number, number>
 ---@field cursorHover? string
 
 ---@class DLux.ElementPrimitive: DLux.ElementPrimitiveProps
@@ -117,15 +117,13 @@ function Element:draw() end
 
 ---@param props? DLux.ElementPrimitiveProps
 function Element:new(props)
+    props = props or {}
     local o = setmetatable({}, self)
     o._ElementName = "ElementPrimitive"
     o.UINode = Yoga.Node.new()
-    props = props or {}
     applyNodeProps(o.UINode.style, props)
     o.debugOutline = props.debugOutline or false
     o.bgColor = props.bgColor or { 0, 0, 0, 0 }
-    o.borderRadius = props.borderRadius or { 0, 0 }
-
 
     o:_resetEventState()
     InputManager:register(o)
